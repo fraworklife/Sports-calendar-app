@@ -1,0 +1,55 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Sport {
+  F1
+  FOOTBALL
+  NBA
+}
+
+model User {
+  id        String      @id @default(uuid())
+  email     String      @unique
+  password  String
+  name      String
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  events    UserEvent[]
+}
+
+model Event {
+  id          String      @id @default(uuid())
+  title       String
+  sport       Sport
+  startDate   DateTime
+  endDate     DateTime?
+  externalId  String?     @unique
+  description String?
+  venue       String?
+  metadata    Json?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  users       UserEvent[]
+}
+
+model UserEvent {
+  id        String   @id @default(uuid())
+  userId    String
+  eventId   String
+  notified30 Boolean @default(false)
+  notifiedStart Boolean @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, eventId])
+}
