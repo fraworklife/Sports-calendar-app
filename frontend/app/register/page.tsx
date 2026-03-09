@@ -4,10 +4,9 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { auth } from '@/lib/api';
-import { useAuth } from '@/contexts/AuthContext';
+import { signIn } from 'next-auth/react';
 
 export default function RegisterPage() {
-  const { login } = useAuth();
   const router = useRouter();
   const [form, setForm] = useState({ name: '', email: '', password: '' });
   const [error, setError] = useState('');
@@ -18,8 +17,18 @@ export default function RegisterPage() {
     setError('');
     setLoading(true);
     try {
-      const result = await auth.register(form);
-      login(result.token, result.user);
+      await auth.register(form);
+      
+      const res = await signIn('credentials', {
+        redirect: false,
+        email: form.email,
+        password: form.password,
+      });
+
+      if (res?.error) {
+        throw new Error('Errore durante il login automatico');
+      }
+
       router.push('/calendar');
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Errore durante la registrazione');

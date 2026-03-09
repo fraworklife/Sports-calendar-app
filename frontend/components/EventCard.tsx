@@ -1,7 +1,7 @@
 'use client';
 
 import { SportEvent } from '@/lib/api';
-import { useAuth } from '@/contexts/AuthContext';
+import { useSession } from 'next-auth/react';
 import { events as eventsApi } from '@/lib/api';
 import { useState } from 'react';
 
@@ -38,13 +38,13 @@ interface Props {
 }
 
 export function EventCard({ event, onSubscriptionChange }: Props) {
-  const { user } = useAuth();
+  const { data: session } = useSession();
   const [subscribed, setSubscribed] = useState(event.isSubscribed ?? false);
   const [loading, setLoading] = useState(false);
 
   const toggleSubscription = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!user) {
+    if (!session?.user) {
       window.location.href = '/login';
       return;
     }

@@ -1,15 +1,15 @@
 'use client';
 
 import Link from 'next/link';
-import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
+import { useSession, signOut } from 'next-auth/react';
 
 export function Navbar() {
-  const { user, logout } = useAuth();
+  const { data: session, status } = useSession();
   const router = useRouter();
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await signOut({ redirect: false });
     router.push('/');
   };
 
@@ -25,13 +25,13 @@ export function Navbar() {
             Calendario
           </Link>
 
-          {user ? (
+          {session?.user ? (
             <>
               <Link href="/my-events" className="navbar-link">
                 I miei eventi
               </Link>
               <span className="navbar-link" style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>
-                {user.name}
+                {session.user.name}
               </span>
               <button
                 className="btn btn-outline btn-sm"

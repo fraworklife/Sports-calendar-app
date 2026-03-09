@@ -3,20 +3,21 @@
 import { useState, useEffect } from 'react';
 import { events as eventsApi, SportEvent } from '@/lib/api';
 import { EventCard } from '@/components/EventCard';
-import { useAuth } from '@/contexts/AuthContext';
+import { NotificationPreferences } from '@/components/NotificationPreferences';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 
 export default function MyEventsPage() {
-  const { user, loading: authLoading } = useAuth();
+  const { data: session, status } = useSession();
   const router = useRouter();
   const [myEvents, setMyEvents] = useState<SportEvent[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!authLoading && !user) {
+    if (status === 'unauthenticated') {
       router.push('/login');
     }
-  }, [user, authLoading, router]);
+  }, [status, router]);
 
   const fetchMyEvents = async () => {
     setLoading(true);
@@ -31,10 +32,10 @@ export default function MyEventsPage() {
   };
 
   useEffect(() => {
-    if (user) fetchMyEvents();
-  }, [user]);
+    if (session?.user) fetchMyEvents();
+  }, [session?.user]);
 
-  if (authLoading || !user) return null;
+  if (status === 'loading' || !session?.user) return null;
 
   return (
     <div className="container calendar-page">
@@ -44,6 +45,8 @@ export default function MyEventsPage() {
           Gli eventi a cui sei iscritto. Riceverai una notifica 30 minuti prima e all&apos;inizio.
         </p>
       </div>
+
+      <NotificationPreferences />
 
       {loading && (
         <div className="loading-spinner">
