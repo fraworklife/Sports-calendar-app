@@ -12,13 +12,13 @@ export default function RegisterPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
     try {
       await auth.register(form);
-      
+
       const res = await signIn('credentials', {
         redirect: false,
         email: form.email,
@@ -30,7 +30,8 @@ export default function RegisterPage() {
       }
 
       router.push('/calendar');
-    } catch (err: unknown) {
+      router.refresh();
+    } catch (err) {
       setError(err instanceof Error ? err.message : 'Errore durante la registrazione');
     } finally {
       setLoading(false);

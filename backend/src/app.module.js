@@ -6,6 +6,8 @@ import { AuthModule } from './auth/auth.module';
 import { EventsModule } from './events/events.module';
 import { SportsModule } from './sports/sports.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
 
 @Module({
   imports: [
@@ -17,5 +19,7 @@ import { NotificationsModule } from './notifications/notifications.module';
     SportsModule,
     NotificationsModule,
   ],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule {}

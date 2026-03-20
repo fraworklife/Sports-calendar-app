@@ -1,10 +1,15 @@
-import { Controller, Post, UseGuards } from '@nestjs/common';
+import { Controller, Post, Inject, UseGuards } from '@nestjs/common';
 import { SportsService } from './sports.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @Controller('sports')
 export class SportsController {
-  constructor(private readonly sportsService: SportsService) {}
+  /**
+   * @param {SportsService} sportsService
+   */
+  constructor(@Inject(SportsService) sportsService) {
+    this.sportsService = sportsService;
+  }
 
   // Manual trigger for sync (admin use)
   @UseGuards(JwtAuthGuard)

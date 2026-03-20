@@ -1,26 +1,6 @@
-import NextAuth, { DefaultSession, DefaultUser } from 'next-auth';
+import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import axios from 'axios';
-
-declare module "next-auth" {
-  interface Session extends DefaultSession {
-    accessToken?: string;
-    user: {
-      id?: string;
-    } & DefaultSession["user"];
-  }
-
-  interface User extends DefaultUser {
-    accessToken?: string;
-  }
-}
-
-declare module "next-auth/jwt" {
-  interface JWT {
-    accessToken?: string;
-    id?: string;
-  }
-}
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
@@ -52,11 +32,11 @@ const handler = NextAuth({
             };
           }
           return null;
-        } catch (error) {
+        } catch {
           return null;
         }
-      }
-    })
+      },
+    }),
   ],
   session: {
     strategy: 'jwt',
@@ -75,7 +55,7 @@ const handler = NextAuth({
         session.user.id = token.id;
       }
       return session;
-    }
+    },
   },
   pages: {
     signIn: '/login',

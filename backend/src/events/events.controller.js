@@ -3,50 +3,57 @@ import {
   Get,
   Post,
   Delete,
+  Inject,
   Param,
   Query,
   UseGuards,
   Request,
-  Optional,
 } from '@nestjs/common';
 import { EventsService } from './events.service';
-import { FilterEventsDto } from './dto/filter-events.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @Controller('events')
 export class EventsController {
-  constructor(private readonly eventsService: EventsService) {}
+  /**
+   * @param {EventsService} eventsService
+   */
+  constructor(@Inject(EventsService) eventsService) {
+    this.eventsService = eventsService;
+  }
 
   // Public — list all events (with subscription info if authenticated)
   @Get()
-  findAll(@Query() filters: FilterEventsDto, @Request() req: { user?: { id: string } }) {
+  /**
+   * @param {import('./dto/filter-events.dto').FilterEventsDto} filters
+   */
+  findAll(@Query() filters, @Request() req) {
     return this.eventsService.findAll(filters, req.user?.id);
   }
 
   // Public — get single event
   @Get(':id')
-  findOne(@Param('id') id: string, @Request() req: { user?: { id: string } }) {
+  findOne(@Param('id') id, @Request() req) {
     return this.eventsService.findOne(id, req.user?.id);
   }
 
   // Protected — subscribe to event
   @UseGuards(JwtAuthGuard)
   @Post(':id/subscribe')
-  subscribe(@Param('id') eventId: string, @Request() req: { user: { id: string } }) {
+  subscribe(@Param('id') eventId, @Request() req) {
     return this.eventsService.subscribe(eventId, req.user.id);
   }
 
   // Protected — unsubscribe from event
   @UseGuards(JwtAuthGuard)
   @Delete(':id/unsubscribe')
-  unsubscribe(@Param('id') eventId: string, @Request() req: { user: { id: string } }) {
+  unsubscribe(@Param('id') eventId, @Request() req) {
     return this.eventsService.unsubscribe(eventId, req.user.id);
   }
 
   // Protected — get current user's subscribed events
   @UseGuards(JwtAuthGuard)
   @Get('user/my-events')
-  getMyEvents(@Request() req: { user: { id: string } }) {
+  getMyEvents(@Request() req) {
     return this.eventsService.getUserEvents(req.user.id);
   }
 }

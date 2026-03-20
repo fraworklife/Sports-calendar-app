@@ -1,16 +1,23 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Inject, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { PrismaService } from '../prisma/prisma.service';
 import { SportsService } from '../sports/sports.service';
 
 @Injectable()
 export class NotificationsService {
-  private readonly logger = new Logger(NotificationsService.name);
+  logger = new Logger(NotificationsService.name);
 
+  /**
+   * @param {PrismaService} prisma
+   * @param {SportsService} sportsService
+   */
   constructor(
-    private prisma: PrismaService,
-    private sportsService: SportsService,
-  ) {}
+    @Inject(PrismaService) prisma,
+    @Inject(SportsService) sportsService,
+  ) {
+    this.prisma = prisma;
+    this.sportsService = sportsService;
+  }
 
   // ─────────────────────────────────────────────────────────
   //  Cron ogni minuto: controlla eventi imminenti
@@ -80,20 +87,14 @@ export class NotificationsService {
     await this.sportsService.syncAll();
   }
 
-  private sendNotification(
-    email: string,
-    name: string,
-    eventTitle: string,
-    timeLeft: string,
-    startDate: Date,
-  ) {
+  sendNotification(email, name, eventTitle, timeLeft, startDate) {
     // TODO: Integra Nodemailer o Resend per email reali
     this.logger.log(
       `📬 PREAVVISO [${email}] "${eventTitle}" inizia tra ${timeLeft} (${startDate.toLocaleTimeString('it-IT')})`,
     );
   }
 
-  private sendStartNotification(email: string, name: string, eventTitle: string) {
+  sendStartNotification(email, name, eventTitle) {
     // TODO: Integra Nodemailer o Resend per email reali
     this.logger.log(
       `🚨 INIZIO EVENTO [${email}] "${eventTitle}" è iniziato adesso!`,

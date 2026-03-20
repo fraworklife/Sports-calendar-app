@@ -1,10 +1,10 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { events as eventsApi, SportEvent, Sport } from '@/lib/api';
+import { events as eventsApi } from '@/lib/api';
 import { EventCard } from '@/components/EventCard';
 
-const FILTERS: { label: string; value: Sport | 'ALL'; emoji: string }[] = [
+const FILTERS = [
   { label: 'Tutti', value: 'ALL', emoji: '🌐' },
   { label: 'Formula 1', value: 'F1', emoji: '🏎️' },
   { label: 'Calcio', value: 'FOOTBALL', emoji: '⚽' },
@@ -12,8 +12,8 @@ const FILTERS: { label: string; value: Sport | 'ALL'; emoji: string }[] = [
 ];
 
 export default function CalendarPage() {
-  const [allEvents, setAllEvents] = useState<SportEvent[]>([]);
-  const [filter, setFilter] = useState<Sport | 'ALL'>('ALL');
+  const [allEvents, setAllEvents] = useState([]);
+  const [filter, setFilter] = useState('ALL');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 

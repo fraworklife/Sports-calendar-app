@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { events as eventsApi, SportEvent } from '@/lib/api';
+import { events as eventsApi } from '@/lib/api';
 import { EventCard } from '@/components/EventCard';
 import { NotificationPreferences } from '@/components/NotificationPreferences';
 import { useRouter } from 'next/navigation';
@@ -10,7 +10,7 @@ import { useSession } from 'next-auth/react';
 export default function MyEventsPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const [myEvents, setMyEvents] = useState<SportEvent[]>([]);
+  const [myEvents, setMyEvents] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

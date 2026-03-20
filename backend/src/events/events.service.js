@@ -1,14 +1,21 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { FilterEventsDto } from './dto/filter-events.dto';
-import { Sport } from '@prisma/client';
 
 @Injectable()
 export class EventsService {
-  constructor(private prisma: PrismaService) {}
+  /**
+   * @param {PrismaService} prisma
+   */
+  constructor(@Inject(PrismaService) prisma) {
+    this.prisma = prisma;
+  }
 
-  async findAll(filters: FilterEventsDto, userId?: string) {
-    const where: { sport?: Sport; startDate?: { gte?: Date; lte?: Date } } = {};
+  /**
+   * @param {import('./dto/filter-events.dto').FilterEventsDto} filters
+   * @param {string | undefined} userId
+   */
+  async findAll(filters, userId) {
+    const where = {};
 
     if (filters.sport) where.sport = filters.sport;
     if (filters.from || filters.to) {
@@ -30,14 +37,14 @@ export class EventsService {
         : undefined,
     });
 
-    return events.map((e) => ({
-      ...e,
-      isSubscribed: userId ? (e.users?.length ?? 0) > 0 : false,
+    return events.map((event) => ({
+      ...event,
+      isSubscribed: userId ? (event.users?.length ?? 0) > 0 : false,
       users: undefined,
     }));
   }
 
-  async findOne(id: string, userId?: string) {
+  async findOne(id, userId) {
     const event = await this.prisma.event.findUnique({
       where: { id },
       include: userId
@@ -57,7 +64,7 @@ export class EventsService {
     };
   }
 
-  async subscribe(eventId: string, userId: string) {
+  async subscribe(eventId, userId) {
     return this.prisma.userEvent.upsert({
       where: { userId_eventId: { userId, eventId } },
       create: { userId, eventId },
@@ -65,13 +72,13 @@ export class EventsService {
     });
   }
 
-  async unsubscribe(eventId: string, userId: string) {
+  async unsubscribe(eventId, userId) {
     return this.prisma.userEvent.deleteMany({
       where: { userId, eventId },
     });
   }
 
-  async getUserEvents(userId: string) {
+  async getUserEvents(userId) {
     return this.prisma.userEvent.findMany({
       where: { userId },
       include: {

@@ -1,23 +1,22 @@
 'use client';
 
-import { SportEvent } from '@/lib/api';
 import { useSession } from 'next-auth/react';
 import { events as eventsApi } from '@/lib/api';
 import { useState } from 'react';
 
-const SPORT_EMOJI: Record<string, string> = {
+const SPORT_EMOJI = {
   F1: '🏎️',
   FOOTBALL: '⚽',
   NBA: '🏀',
 };
 
-const SPORT_LABEL: Record<string, string> = {
+const SPORT_LABEL = {
   F1: 'Formula 1',
   FOOTBALL: 'Calcio',
   NBA: 'NBA',
 };
 
-function formatDate(dateStr: string): string {
+function formatDate(dateStr) {
   const d = new Date(dateStr);
   return d.toLocaleDateString('it-IT', {
     weekday: 'short',
@@ -27,23 +26,18 @@ function formatDate(dateStr: string): string {
   });
 }
 
-function formatTime(dateStr: string): string {
+function formatTime(dateStr) {
   const d = new Date(dateStr);
   return d.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
 }
 
-interface Props {
-  event: SportEvent;
-  onSubscriptionChange?: () => void;
-}
-
-export function EventCard({ event, onSubscriptionChange }: Props) {
+export function EventCard({ event, onSubscriptionChange }) {
   const { data: session } = useSession();
   const [subscribed, setSubscribed] = useState(event.isSubscribed ?? false);
   const [loading, setLoading] = useState(false);
 
-  const toggleSubscription = async (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const toggleSubscription = async (clickEvent) => {
+    clickEvent.stopPropagation();
     if (!session?.user) {
       window.location.href = '/login';
       return;

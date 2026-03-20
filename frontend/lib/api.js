@@ -2,19 +2,16 @@ import { getSession } from 'next-auth/react';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
-async function request<T>(
-  path: string,
-  options: RequestInit = {},
-): Promise<T> {
+async function request(path, options = {}) {
   let token = null;
   if (typeof window !== 'undefined') {
     const session = await getSession();
     token = session?.accessToken || null;
   }
 
-  const headers: Record<string, string> = {
+  const headers = {
     'Content-Type': 'application/json',
-    ...(options.headers as Record<string, string>),
+    ...(options.headers || {}),
   };
   if (token) headers['Authorization'] = `Bearer ${token}`;
 
@@ -30,60 +27,41 @@ async function request<T>(
 
 // ─── Auth ────────────────────────────────────────────────────
 
-export interface AuthResponse {
-  token: string;
-  user: { id: string; email: string; name: string };
-}
-
 export const auth = {
-  register: (data: { email: string; password: string; name: string }) =>
-    request<AuthResponse>('/auth/register', {
+  register: (data) =>
+    request('/auth/register', {
       method: 'POST',
       body: JSON.stringify(data),
     }),
 
-  login: (data: { email: string; password: string }) =>
-    request<AuthResponse>('/auth/login', {
+  login: (data) =>
+    request('/auth/login', {
       method: 'POST',
       body: JSON.stringify(data),
     }),
 
-  me: () => request<{ id: string; email: string; name: string }>('/auth/me'),
+  me: () => request('/auth/me'),
 };
 
 // ─── Events ──────────────────────────────────────────────────
 
-export type Sport = 'F1' | 'FOOTBALL' | 'NBA';
-
-export interface SportEvent {
-  id: string;
-  title: string;
-  sport: Sport;
-  startDate: string;
-  endDate?: string;
-  description?: string;
-  venue?: string;
-  isSubscribed?: boolean;
-  metadata?: Record<string, unknown>;
-}
-
 export const events = {
-  list: (params?: { sport?: Sport; from?: string; to?: string }) => {
+  list: (params) => {
     const qs = params
-      ? '?' + new URLSearchParams(params as Record<string, string>).toString()
+      ? `?${new URLSearchParams(params).toString()}`
       : '';
-    return request<SportEvent[]>(`/events${qs}`);
+    return request(`/events${qs}`);
   },
 
-  get: (id: string) => request<SportEvent>(`/events/${id}`),
+  get: (id) => request(`/events/${id}`),
 
-  subscribe: (id: string) =>
+  subscribe: (id) =>
     request(`/events/${id}/subscribe`, { method: 'POST' }),
 
-  unsubscribe: (id: string) =>
+  unsubscribe: (id) =>
     request(`/events/${id}/unsubscribe`, { method: 'DELETE' }),
 
-  myEvents: () => request<{ event: SportEvent }[]>('/events/user/my-events'),
+  myEvents: () => request('/events/user/my-events'),
 };
 
 // ─── Sports Sync ─────────────────────────────────────────────

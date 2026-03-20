@@ -1,21 +1,28 @@
 import {
   Injectable,
+  Inject,
   ConflictException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../prisma/prisma.service';
-import { RegisterDto, LoginDto } from './dto/auth.dto';
 
 @Injectable()
 export class AuthService {
-  constructor(
-    private prisma: PrismaService,
-    private jwtService: JwtService,
-  ) {}
+  /**
+   * @param {PrismaService} prisma
+   * @param {JwtService} jwtService
+   */
+  constructor(@Inject(PrismaService) prisma, @Inject(JwtService) jwtService) {
+    this.prisma = prisma;
+    this.jwtService = jwtService;
+  }
 
-  async register(dto: RegisterDto) {
+  /**
+   * @param {import('./dto/auth.dto').RegisterDto} dto
+   */
+  async register(dto) {
     const exists = await this.prisma.user.findUnique({
       where: { email: dto.email },
     });
@@ -37,7 +44,10 @@ export class AuthService {
     return { user: { id: user.id, email: user.email, name: user.name }, token };
   }
 
-  async login(dto: LoginDto) {
+  /**
+   * @param {import('./dto/auth.dto').LoginDto} dto
+   */
+  async login(dto) {
     const user = await this.prisma.user.findUnique({
       where: { email: dto.email },
     });
@@ -50,7 +60,7 @@ export class AuthService {
     return { user: { id: user.id, email: user.email, name: user.name }, token };
   }
 
-  async getProfile(userId: string) {
+  async getProfile(userId) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       select: { id: true, email: true, name: true, createdAt: true },
@@ -58,7 +68,7 @@ export class AuthService {
     return user;
   }
 
-  private generateToken(sub: string, email: string, name: string): string {
+  generateToken(sub, email, name) {
     return this.jwtService.sign({ sub, email, name });
   }
 }

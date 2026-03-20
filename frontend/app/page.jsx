@@ -5,23 +5,15 @@ import Link from 'next/link';
 import { format, addDays, startOfWeek, isSameDay } from 'date-fns';
 import { it } from 'date-fns/locale';
 import { useSession } from 'next-auth/react';
-import { CalendarIcon, MapPinIcon, ClockIcon } from 'lucide-react';
+import { ClockIcon } from 'lucide-react';
 import { events as apiEvents } from '@/lib/api';
-
-interface Event {
-  id: string;
-  title: string;
-  sport: 'F1' | 'FOOTBALL' | 'NBA';
-  startDate: string;
-  endDate?: string;
-}
 
 export default function HomePage() {
   const { data: session } = useSession();
-  const [events, setEvents] = useState<Event[]>([]);
+  const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  
+  const [selectedDate, setSelectedDate] = useState(new Date());
+
   // Genera i giorni della settimana corrente
   const weekStart = startOfWeek(selectedDate, { weekStartsOn: 1 });
   const weekDays = Array.from({ length: 7 }).map((_, i) => addDays(weekStart, i));
@@ -41,13 +33,12 @@ export default function HomePage() {
     fetchEvents();
   }, []);
 
-  const selectedEvents = events.filter(e => 
-    isSameDay(new Date(e.startDate), selectedDate)
+  const selectedEvents = events.filter((event) =>
+    isSameDay(new Date(event.startDate), selectedDate),
   );
 
   return (
     <div className="container" style={{ paddingTop: '40px' }}>
-      
       {!session?.user && (
         <div className="home-hero" style={{ padding: '60px 0', marginBottom: '40px' }}>
           <span className="home-hero-emoji">🏆</span>
@@ -75,7 +66,6 @@ export default function HomePage() {
           {weekDays.map((day, i) => {
             const isSelected = isSameDay(day, selectedDate);
             const isToday = isSameDay(day, new Date());
-            
             return (
               <button
                 key={i}
@@ -92,7 +82,7 @@ export default function HomePage() {
                   flexDirection: 'column',
                   alignItems: 'center',
                   gap: '4px',
-                  transition: 'all 0.2s'
+                  transition: 'all 0.2s',
                 }}
               >
                 <span style={{ fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: 600 }}>
@@ -109,7 +99,7 @@ export default function HomePage() {
         {/* Events List for Selected Day */}
         <div className="events-list" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {loading ? (
-             <div className="loading-spinner"><div className="spinner"></div></div>
+            <div className="loading-spinner"><div className="spinner" /></div>
           ) : selectedEvents.length === 0 ? (
             <div className="empty-state">
               <div className="empty-state-emoji">😴</div>
@@ -133,9 +123,9 @@ export default function HomePage() {
                 </div>
                 
                 {session?.user && (
-                   <div>
-                     <button className="btn btn-outline btn-sm">Dettagli</button>
-                   </div>
+                  <div>
+                    <button className="btn btn-outline btn-sm">Dettagli</button>
+                  </div>
                 )}
               </div>
             ))

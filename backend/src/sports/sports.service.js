@@ -1,13 +1,17 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Inject, Logger } from '@nestjs/common';
 import axios from 'axios';
 import { PrismaService } from '../prisma/prisma.service';
-import { Sport } from '@prisma/client';
 
 @Injectable()
 export class SportsService {
-  private readonly logger = new Logger(SportsService.name);
+  logger = new Logger(SportsService.name);
 
-  constructor(private prisma: PrismaService) {}
+  /**
+   * @param {PrismaService} prisma
+   */
+  constructor(@Inject(PrismaService) prisma) {
+    this.prisma = prisma;
+  }
 
   // ─────────────────────────────────────────────────────────
   //  FORMULA 1 — OpenF1 API (no key required)
@@ -30,7 +34,7 @@ export class SportsService {
           create: {
             externalId,
             title: `F1 – ${session.meeting_name} (${session.session_name})`,
-            sport: Sport.F1,
+            sport: 'F1',
             startDate,
             endDate,
             venue: session.location,
@@ -91,7 +95,7 @@ export class SportsService {
             create: {
               externalId,
               title: `${fix.teams.home.name} vs ${fix.teams.away.name}`,
-              sport: Sport.FOOTBALL,
+              sport: 'FOOTBALL',
               startDate,
               endDate,
               venue: fix.fixture.venue?.name,
@@ -109,7 +113,9 @@ export class SportsService {
             },
           });
         }
-        this.logger.log(`${team.name}: sincronizzate ${fixtures.length} partite`);
+        this.logger.log(
+          `${team.name}: sincronizzate ${fixtures.length} partite`,
+        );
       } catch (err) {
         this.logger.error(`Errore sync ${team.name}:`, err.message);
       }
@@ -125,19 +131,16 @@ export class SportsService {
       const currentYear = new Date().getFullYear();
       const seasons = [currentYear - 1]; // NBA season spans two years
 
-      const { data } = await axios.get(
-        'https://api.balldontlie.io/v1/games',
-        {
-          params: {
-            team_ids: [14], // LA Lakers
-            seasons,
-            per_page: 100,
-          },
-          headers: {
-            Authorization: process.env.BALLDONTLIE_API_KEY || '',
-          },
+      const { data } = await axios.get('https://api.balldontlie.io/v1/games', {
+        params: {
+          team_ids: [14], // LA Lakers
+          seasons,
+          per_page: 100,
         },
-      );
+        headers: {
+          Authorization: process.env.BALLDONTLIE_API_KEY || '',
+        },
+      });
 
       const games = data.data || [];
       for (const game of games) {
@@ -150,7 +153,7 @@ export class SportsService {
           create: {
             externalId,
             title: `${game.home_team.full_name} vs ${game.visitor_team.full_name}`,
-            sport: Sport.NBA,
+            sport: 'NBA',
             startDate,
             endDate,
             description: `NBA ${game.season} – ${game.status}`,

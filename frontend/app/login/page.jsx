@@ -3,25 +3,32 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { auth } from '@/lib/api';
-import { useAuth } from '@/contexts/AuthContext';
+import { signIn } from 'next-auth/react';
 
 export default function LoginPage() {
-  const { login } = useAuth();
   const router = useRouter();
   const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
     try {
-      const result = await auth.login(form);
-      login(result.token, result.user);
+      const result = await signIn('credentials', {
+        redirect: false,
+        email: form.email,
+        password: form.password,
+      });
+
+      if (result?.error) {
+        throw new Error('Credenziali non valide');
+      }
+
       router.push('/calendar');
-    } catch (err: unknown) {
+      router.refresh();
+    } catch (err) {
       setError(err instanceof Error ? err.message : 'Errore di accesso');
     } finally {
       setLoading(false);
